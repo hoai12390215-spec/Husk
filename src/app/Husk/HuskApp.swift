@@ -43,9 +43,28 @@ final class HuskAppDelegate: NSObject, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        HuskLog.log("lifecycle", "application did finish launching")
         // The download session reconnects to whatever was running before Husk was closed or relaunched in the background.
         _ = Downloads.shared
         return true
+    }
+
+    func applicationWillResignActive(_ application: UIApplication) {
+        HuskLog.log("lifecycle", "application will resign active")
+        HuskLog.flushNow()
+    }
+
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        HuskLog.log("lifecycle", "application entered background")
+        HuskLog.flushNow()
+    }
+
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        HuskLog.log("lifecycle", "application will enter foreground")
+    }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        HuskLog.log("lifecycle", "application became active")
     }
 
     /// iOS woke Husk because background downloads finished or need attention: handle them, then say so.
@@ -65,6 +84,7 @@ struct HuskApp: App {
         // this point is lost -- and the JIT path is exactly what we cannot afford
         // to lose the first line of.
         HuskLog.start()
+        HuskLog.log("boot", "SwiftUI app initializer entered")
         HuskLog.logFootprint("app-launch")
         // Before anything asks a debugger for anything: was this process already marked as debugged (a jailbreak that allows JIT in apps)?
         JITBootstrap.noteLaunchState()
@@ -73,6 +93,7 @@ struct HuskApp: App {
         // Then the trap guard: without it, any brk we issue when StikDebug is
         // absent kills the process outright rather than returning an error.
         JITBootstrap.installTrapGuard()
+        HuskLog.log("boot", "JIT trap guard ready")
 
         // Android no longer starts by itself unless someone turns that on: once, for everyone who had it from the old default.
         let d = UserDefaults.standard
@@ -82,9 +103,11 @@ struct HuskApp: App {
         }
         // Copies of shared APKs that were never placed.
         IncomingFiles.clearLeftovers()
+        HuskLog.log("boot", "startup cleanup complete")
 
         // Game controllers, for the games the native runtime runs.
         Task { @MainActor in HuskGamepads.shared.start() }
+        HuskLog.log("boot", "startup initialization complete")
     }
 
     var body: some Scene {

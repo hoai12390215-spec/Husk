@@ -118,7 +118,14 @@ enum HuskLog {
 
     /// Force everything out to disk.
     static func flushNow() {
-        if logFD >= 0 { fsync(logFD) }
+        writeLock.lock()
+        defer { writeLock.unlock() }
+        if logFD >= 0, fsync(logFD) != 0 {
+            osLog.error("could not flush husk.log (errno \(errno))")
+        }
+        if pipeWriteFD >= 0, fsync(pipeWriteFD) != 0 {
+            osLog.error("could not flush husk-native.log (errno \(errno))")
+        }
     }
 
     /// Point stdout and stderr at a pipe we drain ourselves.

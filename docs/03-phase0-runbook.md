@@ -83,6 +83,12 @@ Three ways to read it, in order of convenience:
 3. **Files app** — `UIFileSharingEnabled` is set, so both logs are visible under
    Husk's Documents.
 
+Husk also writes launch milestones and app foreground/background transitions to
+`husk.log`, flushing both logs when it leaves the foreground. A `dyld` failure
+that happens before `HuskApp.init()` cannot be written by the app; for that case,
+send the matching `Husk` or extension `.ips` report from **Settings → Privacy →
+Analytics & Improvements → Analytics Data**.
+
 ### The guest's own kernel console
 
 `guest-serial.log` is the single most informative signal available: if the guest

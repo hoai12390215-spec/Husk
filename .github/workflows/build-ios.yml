@@ -33,6 +33,37 @@ jobs:
       - name: Build Husk IPA
         run: ./scripts/ci_build.sh build/Husk.ipa
 
+      - name: Verify iOS 15 runtime compatibility
+        run: |
+          set -euo pipefail
+          IPA_ROOT="$RUNNER_TEMP/husk-ipa-check"
+          mkdir -p "$IPA_ROOT"
+          unzip -q build/Husk.ipa -d "$IPA_ROOT"
+          APP="$IPA_ROOT/Payload/Husk.app/Husk"
+          WIDGET="$IPA_ROOT/Payload/Husk.app/PlugIns/HuskDownloadsWidget.appex/HuskDownloadsWidget"
+          test -f "$APP"
+          test -f "$WIDGET"
+
+          xcrun vtool -show-build "$APP" | grep -Eq 'minos 15\.6'
+          xcrun vtool -show-build "$WIDGET" | grep -Eq 'minos 15\.6'
+
+          if xcrun nm -u "$APP" | grep -F '_$s10Foundation14LocalizedErrorMp' >/dev/null; then
+            echo "error: app still imports Foundation.LocalizedError, which is missing on iOS 15.6" >&2
+            exit 1
+          fi
+
+          if otool -l "$WIDGET" | awk '
+            /cmd LC_LOAD_DYLIB/ { weak = 0; next }
+            /cmd LC_LOAD_WEAK_DYLIB/ { weak = 1; next }
+            /name .*ActivityKit\.framework\/ActivityKit/ && !weak { bad = 1 }
+            END { exit bad }
+          '; then
+            echo "iOS 15 runtime compatibility checks passed"
+          else
+            echo "error: downloads widget strongly links ActivityKit, which is unavailable on iOS 15" >&2
+            exit 1
+          fi
+
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:

@@ -111,7 +111,10 @@ struct ContentView: View {
         .tint(theme.accentColor)
         // The user's appearance: the system's, unless they pinned one. Set on the
         // window rather than with .preferredColorScheme — see Theme.apply.
-        .onAppear { Theme.apply(appearance) }
+        .onAppear {
+            HuskLog.log("ui", "root content view appeared")
+            Theme.apply(appearance)
+        }
         .onChange(of: appearance) { Theme.apply($0) }
         .animation(.easeInOut(duration: 0.22), value: showGuestScreen)
         .animation(.easeInOut(duration: 0.25), value: host.toast)
