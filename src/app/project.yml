@@ -248,11 +248,12 @@ targets:
       - framework: Frameworks/StikJIT.xcframework
         embed: false
 
-  # Draws the Live Activity a download shows (Downloads.swift starts and updates it). Live Activities are iOS 16.1.
+  # Draws the Live Activity a download shows (Downloads.swift starts and updates it). The extension
+  # targets the app's minimum OS so iOS 15 can load it; the widget itself is gated to iOS 16.1.
   HuskDownloadsWidget:
     type: app-extension
     platform: iOS
-    deploymentTarget: "16.1"
+    deploymentTarget: "15.6"
     sources:
       - path: HuskDownloadsWidget
       - path: Shared
