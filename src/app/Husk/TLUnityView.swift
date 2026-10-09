@@ -589,7 +589,7 @@ struct TLCocosAttemptView: View {
         .statusBarHidden(true)
         .hidePersistentSystemOverlaysIfAvailable()
         // Swipes near the edges are the game's.
-        .defersSystemGestures(on: .all)
+        .deferSystemGesturesIfAvailable()
         .onAppear {
             HuskOrientation.set(portrait ? .portrait : .landscape)
             UIApplication.shared.isIdleTimerDisabled = settings.keepAwake

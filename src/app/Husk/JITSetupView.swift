@@ -29,8 +29,8 @@ struct JITSetupFlow: View {
                 }
             }
             .toolbar {
-                if !path.isEmpty {
-                    ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if !path.isEmpty {
                         Button { path.removeLast() } label: {
                             Label("Back", systemImage: "chevron.left")
                         }

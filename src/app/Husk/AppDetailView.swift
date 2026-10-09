@@ -248,6 +248,14 @@ struct InfoRow<Content: View>: View {
 }
 
 extension View {
+    @ViewBuilder func deferSystemGesturesIfAvailable() -> some View {
+        if #available(iOS 16.0, *) {
+            self.defersSystemGestures(on: .all)
+        } else {
+            self
+        }
+    }
+
     @ViewBuilder func hideScrollIndicatorsIfAvailable() -> some View {
         if #available(iOS 16.0, *) {
             self.scrollIndicators(.hidden)

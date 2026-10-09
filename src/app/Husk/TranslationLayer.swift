@@ -796,7 +796,7 @@ struct TLClassicAttemptView: View {
         }
         .statusBarHidden(true)
         .hidePersistentSystemOverlaysIfAvailable()
-        .defersSystemGestures(on: .all)
+        .deferSystemGesturesIfAvailable()
         .onAppear {
             HuskOrientation.set(portrait ? .portrait : .landscape)
             UIApplication.shared.isIdleTimerDisabled = settings.keepAwake
