@@ -112,9 +112,9 @@ struct AppDetailView: View {
             }
 
             Section {
-                LabeledContent("Version", value: live.version ?? "—")
-                LabeledContent("Size", value: live.sizeBytes.map(Self.bytes) ?? "—")
-                LabeledContent("Last Used", value: live.lastUsed.map(Self.when) ?? "Never from Husk")
+                InfoRow("Version", value: live.version ?? "—")
+                InfoRow("Size", value: live.sizeBytes.map(Self.bytes) ?? "—")
+                InfoRow("Last Used", value: live.lastUsed.map(Self.when) ?? "Never from Husk")
             }
 
             Section {
@@ -134,7 +134,7 @@ struct AppDetailView: View {
         .listStyle(.insetGrouped)
         .navigationTitle(live.label)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar { ToolbarItem(placement: .topBarTrailing) { menu } }
+        .toolbar { ToolbarItem(placement: .navigationBarTrailing) { menu } }
         .confirmationDialog("Uninstall \(live.label)?", isPresented: $confirmUninstall,
                             titleVisibility: .visible) {
             Button("Uninstall", role: .destructive) {
@@ -220,5 +220,47 @@ struct AppDetailView: View {
             f.timeStyle = .none
         }
         return f.string(from: date)
+    }
+}
+
+/// A key/value row that works on iOS 15 as well as newer releases.
+struct InfoRow<Content: View>: View {
+    private let title: String
+    private let content: Content
+
+    init(_ title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    init(_ title: String, value: String) where Content == Text {
+        self.init(title) { Text(value).foregroundColor(.secondary) }
+    }
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(title)
+            Spacer(minLength: 12)
+            content
+                .multilineTextAlignment(.trailing)
+        }
+    }
+}
+
+extension View {
+    @ViewBuilder func hideScrollIndicatorsIfAvailable() -> some View {
+        if #available(iOS 16.0, *) {
+            self.scrollIndicators(.hidden)
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder func hidePersistentSystemOverlaysIfAvailable() -> some View {
+        if #available(iOS 16.0, *) {
+            self.persistentSystemOverlays(.hidden)
+        } else {
+            self
+        }
     }
 }

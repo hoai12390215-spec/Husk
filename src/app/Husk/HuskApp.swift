@@ -17,14 +17,21 @@ enum HuskOrientation {
     @MainActor static func set(_ new: UIInterfaceOrientationMask, attempt: Int = 0) {
         mask = new
         for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
-            var vc = scene.keyWindow?.rootViewController
-            while let v = vc { v.setNeedsUpdateOfSupportedInterfaceOrientations(); vc = v.presentedViewController }
-            scene.requestGeometryUpdate(.iOS(interfaceOrientations: new)) { error in
-                HuskLog.log("ui", "orientation change refused (attempt \(attempt + 1)): \(error.localizedDescription)")
-                guard attempt < 5 else { return }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    if mask == new { set(new, attempt: attempt + 1) }
+            if #available(iOS 16.0, *) {
+                var vc = scene.keyWindow?.rootViewController
+                while let v = vc {
+                    v.setNeedsUpdateOfSupportedInterfaceOrientations()
+                    vc = v.presentedViewController
                 }
+                scene.requestGeometryUpdate(.iOS(interfaceOrientations: new)) { error in
+                    HuskLog.log("ui", "orientation change refused (attempt \(attempt + 1)): \(error.localizedDescription)")
+                    guard attempt < 5 else { return }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        if mask == new { set(new, attempt: attempt + 1) }
+                    }
+                }
+            } else {
+                UIViewController.attemptRotationToDeviceOrientation()
             }
         }
     }

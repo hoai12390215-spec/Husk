@@ -12,7 +12,7 @@ struct StoreView: View {
     @State private var selectedApp: PlayAPI.PlayApp?
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             Group {
                 if !manager.isSignedIn {
                     signedOutState
@@ -28,7 +28,7 @@ struct StoreView: View {
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $searchText, prompt: "Search Google Play")
             .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
                     if manager.isSignedIn {
                         Menu {
                             if let s = manager.session {
@@ -91,6 +91,7 @@ struct StoreView: View {
                 Text(manager.errorMessage ?? "")
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     // MARK: - Signed Out State
@@ -317,7 +318,7 @@ struct PlayAppDetailSheet: View {
     @ObservedObject private var manager = PlayStoreManager.shared
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     // Header: Icon, Title, Developer, Get Button
@@ -416,6 +417,7 @@ struct PlayAppDetailSheet: View {
                 }
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     private var installAction: some View {

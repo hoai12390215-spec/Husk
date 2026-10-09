@@ -5,7 +5,7 @@ import SwiftUI
 /// push a page of their own. What belongs to the app, what belongs to the emulator, and what the thing is.
 struct SettingsTab: View {
     var body: some View {
-        NavigationStack {
+        NavigationView {
             List {
                 Section {
                     NavigationLink { AboutSettings() } label: { appCard }
@@ -35,6 +35,7 @@ struct SettingsTab: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Settings")
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     private var appCard: some View {
@@ -60,7 +61,8 @@ struct SettingsTab: View {
                 }
             } icon: {
                 RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(tint.gradient)
+                    .fill(LinearGradient(gradient: Gradient(colors: [tint, tint.opacity(0.82)]),
+                                         startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 30, height: 30)
                     .overlay {
                         Image(systemName: icon)
@@ -760,12 +762,12 @@ struct AboutSettings: View {
             }
 
             Section {
-                LabeledContent("Build", value: Bundle.main.commit)
-                LabeledContent("Guest image", value: GuestImage.imageVersion)
-                LabeledContent("Renderer",
-                               value: runner.displayKind == .gl ? "GPU"
-                                    : runner.displayKind == .software ? "CPU"
-                                    : "Not started")
+                InfoRow("Build", value: Bundle.main.commit)
+                InfoRow("Guest image", value: GuestImage.imageVersion)
+                InfoRow("Renderer",
+                        value: runner.displayKind == .gl ? "GPU"
+                             : runner.displayKind == .software ? "CPU"
+                             : "Not started")
             }
 
             Section {

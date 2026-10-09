@@ -1,0 +1,39 @@
+name: Build iOS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 360
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+
+      - name: Install build tools
+        run: |
+          brew install meson ninja pkg-config xcodegen qemu
+          rustup target add aarch64-apple-ios
+
+      - name: Build Husk IPA
+        run: ./scripts/ci_build.sh build/Husk.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Husk-iOS
+          path: build/Husk.ipa
+          if-no-files-found: error
+          retention-days: 7

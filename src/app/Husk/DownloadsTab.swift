@@ -9,7 +9,7 @@ struct DownloadsTab: View {
     @State private var adding = false
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             List {
                 updatesSection
                 Section {
@@ -53,6 +53,7 @@ struct DownloadsTab: View {
             }
             .sheet(isPresented: $adding) { AddDownloadSheet() }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     @ViewBuilder private var updatesSection: some View {
@@ -131,7 +132,7 @@ private struct AddDownloadSheet: View {
     @State private var working = false
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             Form {
                 Section {
                     TextField("https://… or http://192.168.1.20:8642/", text: $link)
@@ -174,5 +175,6 @@ private struct AddDownloadSheet: View {
             }
             .onAppear { downloads.problem = nil }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }

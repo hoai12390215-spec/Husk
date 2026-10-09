@@ -3,6 +3,22 @@ import SwiftUI
 
 // MARK: - one library
 
+private enum LibraryRouteStack: Equatable {
+    case home
+    case library
+}
+
+private struct LibraryRouteStackKey: EnvironmentKey {
+    static let defaultValue = LibraryRouteStack.home
+}
+
+private extension EnvironmentValues {
+    var libraryRouteStack: LibraryRouteStack {
+        get { self[LibraryRouteStackKey.self] }
+        set { self[LibraryRouteStackKey.self] = newValue }
+    }
+}
+
 /// Anything Husk can open: a game run on the translation layer, an app installed in Android, or Android itself.
 ///
 /// The person never has to know which way something runs -- Husk does -- so the launcher sorts by what a thing is (a game,
@@ -155,7 +171,7 @@ struct HomeView: View {
     }
 
     var body: some View {
-        NavigationStack(path: $router.home) {
+        NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     HStack(spacing: 10) {
@@ -185,13 +201,13 @@ struct HomeView: View {
                             ScrollView(.horizontal) {
                                 LazyHStack(alignment: .top, spacing: 12) {
                                     ForEach(games) { item in
-                                        NavigationLink(value: item.route) { CoverTile(item: item) }
+                                        LibraryRouteLink(route: item.route) { CoverTile(item: item) }
                                             .buttonStyle(CardButtonStyle())
                                     }
                                 }
                                 .padding(.horizontal, 20)
                             }
-                            .scrollIndicators(.hidden)
+                            .hideScrollIndicatorsIfAvailable()
                             .padding(.horizontal, -20)
                         }
 
@@ -201,7 +217,7 @@ struct HomeView: View {
                             LazyVGrid(columns: [GridItem(.adaptive(minimum: 64, maximum: 90), spacing: 8, alignment: .top)],
                                       spacing: 14) {
                                 ForEach(apps.prefix(UIDevice.current.userInterfaceIdiom == .pad ? 16 : 8)) { item in
-                                    NavigationLink(value: item.route) {
+                                    LibraryRouteLink(route: item.route) {
                                         LauncherTile(title: item.title, iconPath: item.iconPath, size: 50)
                                     }
                                     .buttonStyle(CardButtonStyle())
@@ -218,11 +234,11 @@ struct HomeView: View {
                 .padding(.bottom, 32)
                 .id(jit.attachGeneration)
             }
-            .scrollIndicators(.hidden)
             .background(Color(uiColor: .systemBackground).ignoresSafeArea())
-            .toolbar(.hidden, for: .navigationBar)
-            .libraryDestinations()
+            .navigationBarHidden(true)
         }
+        .navigationViewStyle(StackNavigationViewStyle())
+        .environment(\.libraryRouteStack, .home)
     }
 }
 
@@ -349,7 +365,7 @@ private struct HeroCard: View {
     @ObservedObject private var router = Router.shared
 
     var body: some View {
-        NavigationLink(value: item.route) {
+        LibraryRouteLink(route: item.route) {
             ZStack(alignment: .bottomLeading) {
                 ItemBackdrop(item: item)
                 LinearGradient(colors: [.clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom)
@@ -440,7 +456,11 @@ struct AndroidMark: View {
             .font(.system(size: size * 0.46, weight: .semibold))
             .foregroundStyle(.white)
             .frame(width: size, height: size)
-            .background(Self.green.gradient, in: RoundedRectangle(cornerRadius: size * 0.225, style: .continuous))
+            .background(
+                LinearGradient(gradient: Gradient(colors: [Self.green, Self.green.opacity(0.82)]),
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: size * 0.225, style: .continuous)
+            )
     }
 }
 
@@ -467,7 +487,7 @@ struct LibraryScreen: View {
     @State private var query = ""
 
     var body: some View {
-        NavigationStack(path: $router.library) {
+        NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
@@ -501,12 +521,11 @@ struct LibraryScreen: View {
                 .padding(.top, 8)
                 .padding(.bottom, 32)
             }
-            .scrollIndicators(.hidden)
-            .scrollDismissesKeyboard(.immediately)
             .background(Color(uiColor: .systemBackground).ignoresSafeArea())
-            .toolbar(.hidden, for: .navigationBar)
-            .libraryDestinations()
+            .navigationBarHidden(true)
         }
+        .navigationViewStyle(StackNavigationViewStyle())
+        .environment(\.libraryRouteStack, .library)
     }
 
     @ViewBuilder
@@ -522,7 +541,7 @@ struct LibraryScreen: View {
             } else {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 76, maximum: 110), spacing: 12, alignment: .top)], spacing: 20) {
                     ForEach(items) { item in
-                        NavigationLink(value: item.route) {
+                        LibraryRouteLink(route: item.route) {
                             LauncherTile(title: item.title, iconPath: item.iconPath, item: item, caption: caption(item))
                         }
                         .buttonStyle(CardButtonStyle())
@@ -703,16 +722,50 @@ func matches(_ query: String, _ names: String...) -> Bool {
     return q.isEmpty || names.contains { $0.localizedCaseInsensitiveContains(q) }
 }
 
-extension View {
-    /// The pages an item opens, for whichever stack shows it.
-    func libraryDestinations() -> some View {
-        navigationDestination(for: LibraryRoute.self) { route in
-            LibraryRouteView(route: route).toolbar(.visible, for: .navigationBar)
-        }
+/// A route link for Home and Library. Binding the legacy NavigationView link
+/// to the same route array preserves programmatic opens on iOS 15.
+struct LibraryRouteLink<Label: View>: View {
+    let route: LibraryRoute
+    private let label: Label
+    @ObservedObject private var router = Router.shared
+    @Environment(\.libraryRouteStack) private var stack
+
+    init(route: LibraryRoute, @ViewBuilder label: () -> Label) {
+        self.route = route
+        self.label = label()
+    }
+
+    private var path: Binding<[LibraryRoute]> {
+        Binding(
+            get: { stack == .library ? router.library : router.home },
+            set: {
+                if stack == .library { router.library = $0 }
+                else { router.home = $0 }
+            }
+        )
+    }
+
+    var body: some View {
+        NavigationLink(
+            destination: LibraryRouteView(route: route).navigationBarHidden(false),
+            isActive: Binding(
+                get: { path.wrappedValue.contains(route) },
+                set: { active in
+                    var routes = path.wrappedValue
+                    if active {
+                        if !routes.contains(route) { routes.append(route) }
+                    } else if let index = routes.firstIndex(of: route) {
+                        routes = Array(routes.prefix(index))
+                    }
+                    path.wrappedValue = routes
+                }
+            ),
+            label: { label }
+        )
     }
 }
 
-private struct LibraryRouteView: View {
+struct LibraryRouteView: View {
     let route: LibraryRoute
     @ObservedObject private var store = TranslationLayerStore.shared
 

@@ -20,20 +20,25 @@ struct JITSetupFlow: View {
     private var device: String { OnDevicePairing.deviceKind }
 
     var body: some View {
-        NavigationStack(path: $path) {
-            choose
-                .navigationDestination(for: Step.self) { step in
-                    switch step {
-                    case .pairOnDevice: pairOnDevice
-                    case .importFile: importFile
-                    case .connect: connect
-                    case .enable: enable
-                    case .stikDebug: stikDebug
-                    case .trollStore: trollStore
-                    case .jailbreak: jailbreak
+        NavigationView {
+            Group {
+                if let step = path.last {
+                    stepView(step)
+                } else {
+                    choose
+                }
+            }
+            .toolbar {
+                if !path.isEmpty {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button { path.removeLast() } label: {
+                            Label("Back", systemImage: "chevron.left")
+                        }
                     }
                 }
+            }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
         .tint(Theme.accent)
         .fileImporter(isPresented: $importing, allowedContentTypes: [.propertyList, .data]) { result in
             switch result {
@@ -54,6 +59,18 @@ struct JITSetupFlow: View {
         // Swiping the sheet away, or a copy shown from onboarding, must not
         // leave a request to show it again behind.
         .onDisappear { jit.showSetup = false }
+    }
+
+    @ViewBuilder private func stepView(_ step: Step) -> some View {
+        switch step {
+        case .pairOnDevice: pairOnDevice
+        case .importFile: importFile
+        case .connect: connect
+        case .enable: enable
+        case .stikDebug: stikDebug
+        case .trollStore: trollStore
+        case .jailbreak: jailbreak
+        }
     }
 
     private func close() {

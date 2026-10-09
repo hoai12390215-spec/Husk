@@ -82,7 +82,7 @@ struct ContentView: View {
                 }
                 .task(id: toast.id) {
                     try? await Task.sleep(nanoseconds: 4_500_000_000)
-                    withAnimation(.snappy) {
+                    withAnimation(.easeInOut) {
                         if host.toast?.id == toast.id { host.toast = nil }
                     }
                 }
@@ -113,8 +113,8 @@ struct ContentView: View {
         // window rather than with .preferredColorScheme — see Theme.apply.
         .onAppear { Theme.apply(appearance) }
         .onChange(of: appearance) { Theme.apply($0) }
-        .animation(.snappy(duration: 0.22), value: showGuestScreen)
-        .animation(.snappy(duration: 0.25), value: host.toast)
+        .animation(.easeInOut(duration: 0.22), value: showGuestScreen)
+        .animation(.easeInOut(duration: 0.25), value: host.toast)
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView {
                 showOnboarding = false
@@ -161,9 +161,13 @@ struct ContentView: View {
         // An APK shared to Husk: where does it go?
         .sheet(isPresented: Binding(get: { !incoming.waiting.isEmpty },
                                     set: { if !$0 { incoming.discard() } })) {
-            IncomingChooser()
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
+            if #available(iOS 16.0, *) {
+                IncomingChooser()
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
+            } else {
+                IncomingChooser()
+            }
         }
         // APKs meant for Android wait until it can take them.
         .onChange(of: host.isReady) { ready in
@@ -198,8 +202,7 @@ struct ContentView: View {
             evaluate()
         }
         // The two-parameter onChange is iOS 17; this single-parameter form is
-        // deprecated there but still works, and is the only one that compiles
-        // against the 16.0 deployment target.
+        // deprecated there but still works, and remains compatible with iOS 15.
         .onChange(of: scenePhase) { phase in
             // StikDebug relaunches Husk after attaching, so returning to the
             // foreground is the moment worth re-checking, not first launch.
@@ -468,10 +471,14 @@ struct GuestScreenView: View {
         // document picker is up, and an importer attached to a view that goes
         // away goes away with it.
         .statusBarHidden(true)
-        .persistentSystemOverlays(.hidden)
+        .hidePersistentSystemOverlaysIfAvailable()
         .sheet(isPresented: $showControls) {
-            ControlsSheet(keyboard: $keyboard)
-                .presentationDetents([.height(300)])
+            if #available(iOS 16.0, *) {
+                ControlsSheet(keyboard: $keyboard)
+                    .presentationDetents([.height(300)])
+            } else {
+                ControlsSheet(keyboard: $keyboard)
+            }
         }
     }
 }
@@ -490,7 +497,7 @@ struct LogView: View {
     private let tick = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 1) {
@@ -536,6 +543,7 @@ struct LogView: View {
                 ])
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     /// Colour by source so the JIT path stands out from QEMU's own chatter.

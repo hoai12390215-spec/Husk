@@ -159,9 +159,10 @@ struct CrashReportSheet: View {
     let report: CrashReport.Report
     @Environment(\.dismiss) private var dismiss
     @State private var file: URL?
+    @State private var sharing = false
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     HStack(spacing: 14) {
@@ -187,7 +188,7 @@ struct CrashReportSheet: View {
                     }
 
                     if let file {
-                        ShareLink(item: file) {
+                        Button { sharing = true } label: {
                             Label("Share Report", systemImage: "square.and.arrow.up")
                                 .frame(maxWidth: .infinity).padding(.vertical, 6)
                         }
@@ -202,6 +203,10 @@ struct CrashReportSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
         .task { file = CrashReport.writeReport(report) }
+        .sheet(isPresented: $sharing) {
+            if let file { ShareSheet(items: [file]) }
+        }
     }
 }

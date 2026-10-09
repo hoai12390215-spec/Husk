@@ -74,9 +74,10 @@ struct GameStatusBadge: View {
     var body: some View {
         Image(systemName: result.symbol)
             .font(.system(size: 15, weight: .bold))
-            .symbolRenderingMode(.palette)
-            .foregroundStyle(.white, result.color)
-            .background(Circle().fill(Color(uiColor: .systemBackground)).padding(1))
+            .foregroundColor(.white)
+            .padding(2)
+            .background(Circle().fill(result.color))
+            .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
             .accessibilityLabel(result.label)
     }
 }

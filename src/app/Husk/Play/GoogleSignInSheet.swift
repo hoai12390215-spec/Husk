@@ -13,7 +13,7 @@ struct GoogleSignInSheet: View {
     @State private var promptError: String?
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             ZStack {
                 Theme.backdrop.ignoresSafeArea()
 
@@ -57,6 +57,7 @@ struct GoogleSignInSheet: View {
                     .disabled(manager.isLoading)
                 }
             }
+            .navigationViewStyle(StackNavigationViewStyle())
         }
     }
 }

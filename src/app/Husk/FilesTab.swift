@@ -17,16 +17,14 @@ struct FilesTab: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack(path: $router.files) {
-            DirectoryView(path: Self.root, title: "Files")
-                .navigationDestination(for: String.self) { path in
-                    DirectoryView(path: path,
-                                  title: (path as NSString).lastPathComponent)
-                }
+        NavigationView {
+            DirectoryView(path: router.files.last ?? Self.root,
+                          title: router.files.last.map { ($0 as NSString).lastPathComponent } ?? "Files")
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } }
                 }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
@@ -74,14 +72,18 @@ struct DirectoryView: View {
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(path == FilesTab.root ? .large : .inline)
         .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button { load() } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                 Button { showImportSheet = true } label: { Label("Import", systemImage: "plus") }
             }
         }
         .sheet(isPresented: $showImportSheet) {
-            ImportSheet(destination: path) { showImportSheet = false; importing = true }
-                .presentationDetents([.height(340)])
+            if #available(iOS 16.0, *) {
+                ImportSheet(destination: path) { showImportSheet = false; importing = true }
+                    .presentationDetents([.height(340)])
+            } else {
+                ImportSheet(destination: path) { showImportSheet = false; importing = true }
+            }
         }
         .huskFilePicker(isPresented: $importing) { urls in
             host.sendFiles(urls, to: path)
@@ -104,7 +106,7 @@ struct DirectoryView: View {
 
     @ViewBuilder private func row(_ e: AndroidHost.GuestEntry) -> some View {
         if e.isDirectory {
-            NavigationLink(value: e.path) {
+            NavigationLink(destination: DirectoryView(path: e.path, title: e.name)) {
                 fileLabel(icon: "folder.fill", tint: .accentColor, title: e.name,
                           subtitle: e.modified.map(Self.when))
             }
@@ -214,7 +216,7 @@ struct ImportSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             VStack(spacing: 18) {
                 VStack(spacing: 10) {
                     Image(systemName: "doc.badge.plus")
@@ -241,8 +243,9 @@ struct ImportSheet: View {
             .navigationTitle("Import")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } }
+                ToolbarItem(placement: .navigationBarTrailing) { Button("Done") { dismiss() } }
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
