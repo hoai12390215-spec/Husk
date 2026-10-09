@@ -25,6 +25,9 @@ jobs:
       - name: Install build tools
         run: |
           brew install meson ninja pkg-config xcodegen qemu
+          python3 -m venv "$RUNNER_TEMP/husk-python"
+          "$RUNNER_TEMP/husk-python/bin/python" -m pip install --disable-pip-version-check PyYAML
+          echo "PYTHONPATH=$("$RUNNER_TEMP/husk-python/bin/python" -c 'import site; print(site.getsitepackages()[0])')" >> "$GITHUB_ENV"
           rustup target add aarch64-apple-ios
 
       - name: Build Husk IPA
