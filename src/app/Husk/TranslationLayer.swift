@@ -360,8 +360,8 @@ final class TranslationLayerStore: ObservableObject {
             }
         } catch {
             try? fm.removeItem(at: dir)
-            HuskLog.log("tl", "FAILED to add: \(error.localizedDescription)")
-            return "Husk could not copy it: \(error.localizedDescription)"
+            HuskLog.log("tl", "FAILED to add: \(error.huskLocalizedDescription)")
+            return "Husk could not copy it: \(error.huskLocalizedDescription)"
         }
 
         let apks = ((try? fm.contentsOfDirectory(atPath: dir.path)) ?? [])

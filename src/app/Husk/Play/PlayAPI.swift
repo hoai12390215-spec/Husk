@@ -6,10 +6,10 @@ import Foundation
 /// "purchase" that every download starts with, and delivery, which answers with the files' addresses.
 ///
 /// Written for Husk from how those requests look on the wire; it shares no code with any other client.
-struct PlayError: LocalizedError {
+struct PlayError: HuskLocalizedError {
     let message: String
     init(_ message: String) { self.message = message }
-    var errorDescription: String? { message }
+    var huskErrorDescription: String { message }
 }
 
 /// Everything a signed-in session needs, kept between launches.
@@ -792,4 +792,3 @@ enum PlayAPI {
         return downloadedFiles
     }
 }
-

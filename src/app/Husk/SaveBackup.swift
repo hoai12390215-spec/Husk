@@ -8,10 +8,10 @@ import Foundation
 /// again (caches, unpacked engine files). The zip is stored, not compressed, so it is quick to make and the Files app opens it.
 /// Restoring replaces the game's data with the backup's, after checking it is a backup of the same game.
 enum SaveBackup {
-    struct Failure: LocalizedError {
+    struct Failure: HuskLocalizedError {
         let message: String
         init(_ m: String) { message = m }
-        var errorDescription: String? { message }
+        var huskErrorDescription: String { message }
     }
 
     /// Folders that are made again by the game or by Husk, and are left out of a backup.

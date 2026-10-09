@@ -8,9 +8,9 @@ import Foundation
 enum BundleUnpacker {
     static let extensions: Set<String> = ["xapk", "apkm", "apks"]
 
-    enum Failure: LocalizedError {
+    enum Failure: HuskLocalizedError {
         case notAZip, unsupported(String)
-        var errorDescription: String? {
+        var huskErrorDescription: String {
             switch self {
             case .notAZip: return "That file is not a bundle Husk can read."
             case .unsupported(let why): return why

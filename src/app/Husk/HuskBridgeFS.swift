@@ -156,8 +156,8 @@ final class HuskBridgeFS: ObservableObject {
             HuskLog.log("bridge", "queued \(name) for install "
                                + "(\((try? FileManager.default.attributesOfItem(atPath: dest.path)[.size] as? NSNumber)??.intValue ?? 0) bytes)")
         } catch {
-            HuskLog.log("bridge", "FAILED to queue \(name): \(error.localizedDescription)")
-            lastAgentMessage = "Could not add \(name): \(error.localizedDescription)"
+            HuskLog.log("bridge", "FAILED to queue \(name): \(error.huskLocalizedDescription)")
+            lastAgentMessage = "Could not add \(name): \(error.huskLocalizedDescription)"
         }
     }
 
@@ -174,7 +174,7 @@ final class HuskBridgeFS: ObservableObject {
             try FileManager.default.moveItem(at: tmp, to: dest)
             HuskLog.log("bridge", "sent \(payload)")
         } catch {
-            HuskLog.log("bridge", "could not send \(payload): \(error.localizedDescription)")
+            HuskLog.log("bridge", "could not send \(payload): \(error.huskLocalizedDescription)")
         }
     }
 }
@@ -202,11 +202,11 @@ final class HuskBridgeFS: ObservableObject {
 /// prints. Every call opens its own connection, because the listener spawns a
 /// fresh shell per connection and one command can therefore never inherit
 /// another's environment, working directory or half-read stdin.
-enum BridgeError: LocalizedError {
+enum BridgeError: HuskLocalizedError {
     case io(String)
     case timeout(String)
 
-    var errorDescription: String? {
+    var huskErrorDescription: String {
         switch self {
         case .io(let m):      return m
         case .timeout(let m): return "timed out \(m)"
@@ -1007,7 +1007,7 @@ final class AndroidHost: ObservableObject {
             await refreshMetadata(for: names)
             for name in names { await fetchAppInfo(for: name) }
         } catch {
-            HuskLog.log("bridge", "could not list packages: \(error.localizedDescription)")
+            HuskLog.log("bridge", "could not list packages: \(error.huskLocalizedDescription)")
         }
     }
 
@@ -1074,7 +1074,7 @@ final class AndroidHost: ObservableObject {
             HuskLog.log("bridge", "launcher cache: \(found.count) app(s) named by Android")
         } catch {
             HuskLog.log("bridge", "launcher cache unavailable: "
-                      + error.localizedDescription)
+                      + error.huskLocalizedDescription)
         }
         return found
     }
@@ -1408,7 +1408,7 @@ final class AndroidHost: ObservableObject {
             }
         } catch {
             HuskLog.log("bridge", "details for \(package) failed: "
-                      + error.localizedDescription)
+                      + error.huskLocalizedDescription)
         }
     }
 
@@ -1501,7 +1501,7 @@ final class AndroidHost: ObservableObject {
                     sent += 1
                 } catch {
                     await MainActor.run {
-                        self?.busy = "Could not send \(name): \(error.localizedDescription)"
+                        self?.busy = "Could not send \(name): \(error.huskLocalizedDescription)"
                     }
                     try? await Task.sleep(nanoseconds: 4_000_000_000)
                     await MainActor.run { self?.busy = nil }
@@ -1739,8 +1739,8 @@ final class AndroidHost: ObservableObject {
                     }
                 }
             } catch {
-                HuskLog.log("bridge", "install failed: \(error.localizedDescription)")
-                await MainActor.run { self?.busy = "Install failed: \(error.localizedDescription)" }
+                HuskLog.log("bridge", "install failed: \(error.huskLocalizedDescription)")
+                await MainActor.run { self?.busy = "Install failed: \(error.huskLocalizedDescription)" }
                 Task { try? await Task.sleep(nanoseconds: 5_000_000_000)
                        await MainActor.run { self?.busy = nil } }
             }

@@ -97,8 +97,8 @@ final class PlayStoreManager: ObservableObject {
         } catch {
             isLoading = false
             statusMessage = nil
-            errorMessage = error.localizedDescription
-            HuskLog.log("store", "Sign-in error: \(error.localizedDescription)")
+            errorMessage = error.huskLocalizedDescription
+            HuskLog.log("store", "Sign-in error: \(error.huskLocalizedDescription)")
         }
     }
 
@@ -120,8 +120,8 @@ final class PlayStoreManager: ObservableObject {
         } catch {
             isLoading = false
             statusMessage = nil
-            errorMessage = "Guest sign-in failed: \(error.localizedDescription)"
-            HuskLog.log("store", "Aurora guest sign-in error: \(error.localizedDescription)")
+            errorMessage = "Guest sign-in failed: \(error.huskLocalizedDescription)"
+            HuskLog.log("store", "Aurora guest sign-in error: \(error.huskLocalizedDescription)")
         }
     }
 
@@ -135,7 +135,7 @@ final class PlayStoreManager: ObservableObject {
                 saveSession(fresh)
                 await loadBrowseApps()
             } catch {
-                HuskLog.log("store", "Failed to refresh Aurora guest token: \(error.localizedDescription)")
+                HuskLog.log("store", "Failed to refresh Aurora guest token: \(error.huskLocalizedDescription)")
             }
             return
         }
@@ -146,7 +146,7 @@ final class PlayStoreManager: ObservableObject {
             saveSession(s)
             await loadBrowseApps()
         } catch {
-            HuskLog.log("store", "Failed to refresh Play token: \(error.localizedDescription)")
+            HuskLog.log("store", "Failed to refresh Play token: \(error.huskLocalizedDescription)")
         }
     }
 
@@ -162,7 +162,7 @@ final class PlayStoreManager: ObservableObject {
             self.isLoading = false
         } catch {
             self.isLoading = false
-            HuskLog.log("store", "Failed to browse apps: \(error.localizedDescription)")
+            HuskLog.log("store", "Failed to browse apps: \(error.huskLocalizedDescription)")
         }
     }
 
@@ -181,7 +181,7 @@ final class PlayStoreManager: ObservableObject {
             self.isSearching = false
         } catch {
             self.isSearching = false
-            HuskLog.log("store", "Failed to search '\(query)': \(error.localizedDescription)")
+            HuskLog.log("store", "Failed to search '\(query)': \(error.huskLocalizedDescription)")
         }
     }
 
@@ -230,8 +230,8 @@ final class PlayStoreManager: ObservableObject {
             } catch {
                 self.downloadProgress.removeValue(forKey: pkg)
                 self.installingPackages.remove(pkg)
-                self.errorMessage = "Failed to download \(app.title): \(error.localizedDescription)"
-                HuskLog.log("store", "Download error for \(pkg): \(error.localizedDescription)")
+                self.errorMessage = "Failed to download \(app.title): \(error.huskLocalizedDescription)"
+                HuskLog.log("store", "Download error for \(pkg): \(error.huskLocalizedDescription)")
             }
         }
     }

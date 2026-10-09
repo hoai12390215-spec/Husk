@@ -252,7 +252,7 @@ struct GamePage: View {
                 savesBusy = false
                 switch result {
                 case .success(let url): backupFile = url
-                case .failure(let e): savesMessage = e.localizedDescription
+                case .failure(let e): savesMessage = e.huskLocalizedDescription
                 }
             }
         }
@@ -273,7 +273,7 @@ struct GamePage: View {
                 savesBusy = false
                 switch result {
                 case .success(let n): savesMessage = "Restored \(n) file\(n == 1 ? "" : "s") from \(url.lastPathComponent)."
-                case .failure(let e): savesMessage = e.localizedDescription
+                case .failure(let e): savesMessage = e.huskLocalizedDescription
                 }
             }
         }

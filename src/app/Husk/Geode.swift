@@ -103,7 +103,7 @@ final class GeodeSupport: ObservableObject {
                 let tag = release.hasPrefix("v") ? release : "v" + release
                 if let res = URL(string: "https://github.com/geode-sdk/geode/releases/download/\(tag)/resources.zip") {
                     do { try await Self.download(res, to: Self.resourcesZip(app.id)) }
-                    catch { HuskLog.log("geode", "no separate resources for Geode \(release): \(error.localizedDescription)") }
+                    catch { HuskLog.log("geode", "no separate resources for Geode \(release): \(error.huskLocalizedDescription)") }
                 }
                 if !FileManager.default.fileExists(atPath: Self.resourcesZip(app.id).path) {
                     try Data().write(to: Self.resourcesZip(app.id))      // checked once: this release has none
@@ -123,8 +123,8 @@ final class GeodeSupport: ObservableObject {
             status[app.id] = .ready(release)
             HuskLog.log("geode", "Geode \(release) ready for \(app.label) (versionCode \(versionCode))")
         } catch {
-            status[app.id] = .failed(error.localizedDescription)
-            HuskLog.log("geode", "could not get Geode: \(error.localizedDescription)")
+            status[app.id] = .failed(error.huskLocalizedDescription)
+            HuskLog.log("geode", "could not get Geode: \(error.huskLocalizedDescription)")
         }
     }
 
@@ -136,10 +136,10 @@ final class GeodeSupport: ObservableObject {
 
     // MARK: network
 
-    struct GeodeError: LocalizedError {
+    struct GeodeError: HuskLocalizedError {
         let message: String
         init(_ m: String) { message = m }
-        var errorDescription: String? { message }
+        var huskErrorDescription: String { message }
     }
 
     private static func json(_ url: URL) async throws -> [String: Any] {
